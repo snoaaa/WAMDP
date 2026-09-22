@@ -30,7 +30,7 @@ export const NavigationItems: NavigationItem[] = [
         title: 'Default',
         type: 'item',
         classes: 'nav-item',
-        url: '/dashboard/default',
+        url: '/admin/dashboard/default',
         icon: 'dashboard',
         breadcrumbs: false
       }
@@ -47,7 +47,7 @@ export const NavigationItems: NavigationItem[] = [
         title: 'Login',
         type: 'item',
         classes: 'nav-item',
-        url: '/login',
+        url: '/admin/login',
         icon: 'login',
         target: true,
         breadcrumbs: false
@@ -57,7 +57,7 @@ export const NavigationItems: NavigationItem[] = [
         title: 'Register',
         type: 'item',
         classes: 'nav-item',
-        url: '/register',
+        url: '/admin/register',
         icon: 'profile',
         target: true,
         breadcrumbs: false
@@ -75,7 +75,7 @@ export const NavigationItems: NavigationItem[] = [
         title: 'Typography',
         type: 'item',
         classes: 'nav-item',
-        url: '/typography',
+        url: '/admin/typography',
         icon: 'font-size'
       },
       {
@@ -83,7 +83,7 @@ export const NavigationItems: NavigationItem[] = [
         title: 'Colors',
         type: 'item',
         classes: 'nav-item',
-        url: '/color',
+        url: '/admin/color',
         icon: 'bg-colors'
       },
       {
@@ -109,7 +109,7 @@ export const NavigationItems: NavigationItem[] = [
         id: 'sample-page',
         title: 'Sample Page',
         type: 'item',
-        url: '/sample-page',
+        url: '/admin/sample-page',
         classes: 'nav-item',
         icon: 'chrome'
       },
