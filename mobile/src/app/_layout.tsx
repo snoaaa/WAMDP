@@ -1,18 +1,181 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import {
+  DrawerContent,
+  DrawerProvider,
+  useDrawer,
+} from "@/components/drawer-content";
+import { DrawerLayout } from "@/components/drawer-layout";
+import "@/global.css";
+import { useSystemBackgroundColor } from "@/utils/use-system-background-color";
+import { Stack, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { Platform } from "react-native";
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { ModelProvider } from "@/components/model-context";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider as RNTheme,
+} from "expo-router/react-navigation";
+import { useColorScheme } from "react-native";
+import { SafeAreaListener } from "react-native-safe-area-context";
+import { Uniwind, useCSSVariable } from "uniwind";
 
-SplashScreen.preventAutoHideAsync();
+const GLASS = Platform.OS === "ios";
+const IS_ANDROID = process.env.EXPO_OS === "android";
+const MODELS = [
+  {
+    id: "opus-4.6",
+    label: "Opus 4.6",
+    subtitle: "Most capable for ambitious work",
+  },
+  {
+    id: "sonnet-4.6",
+    label: "Sonnet 4.6",
+    subtitle: "Most efficient for everyday tasks",
+  },
+  {
+    id: "haiku-4.5",
+    label: "Haiku 4.5",
+    subtitle: "Fastest for quick answers",
+  },
+] as const;
 
-export default function TabLayout() {
+const MORE_MODELS = [
+  { id: "opus-4.5", label: "Opus 4.5" },
+  { id: "opus-3", label: "Opus 3" },
+  { id: "sonnet-4.5", label: "Sonnet 4.5" },
+] as const;
+
+const ALL_MODELS = [...MODELS, ...MORE_MODELS];
+
+function ThemeProvider(props: { children: React.ReactNode }) {
   const colorScheme = useColorScheme();
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
+    <RNTheme value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <SafeAreaListener onChange={({ insets }) => Uniwind.updateInsets(insets)}>
+        {props.children}
+      </SafeAreaListener>
+    </RNTheme>
+  );
+}
+
+export const unstable_settings = {
+  anchor: "index",
+};
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <ModelProvider models={ALL_MODELS}>
+        <DrawerProvider>
+          <RootDrawer />
+        </DrawerProvider>
+      </ModelProvider>
+      {process.env.EXPO_OS !== "ios" && <StatusBar style="auto" />}
     </ThemeProvider>
+  );
+}
+
+function RootDrawer() {
+  const router = useRouter();
+  const { isOpen, openDrawer, closeDrawer } = useDrawer();
+
+  useSystemBackgroundColor();
+
+  return (
+    <DrawerLayout
+      open={isOpen}
+      onOpen={openDrawer}
+      onClose={closeDrawer}
+      drawerContent={
+        <DrawerContent
+          onNavigate={(path) => {
+            closeDrawer();
+            router.replace(path, { withAnchor: true });
+          }}
+          onOpenModal={(path) => {
+            router.navigate(path);
+          }}
+        />
+      }
+    >
+      <StackLayout />
+    </DrawerLayout>
+  );
+}
+
+function StackLayout() {
+  const appForeground = useCSSVariable("--app-foreground") as string;
+  const appBackground = useCSSVariable("--app-background") as string;
+
+  return (
+    <Stack
+      screenOptions={{
+        headerTransparent: GLASS,
+        headerBackButtonDisplayMode: GLASS ? "minimal" : "default",
+        headerTintColor: appForeground,
+        headerShadowVisible: IS_ANDROID ? false : undefined,
+        headerStyle: IS_ANDROID
+          ? {
+              backgroundColor: appBackground,
+            }
+          : undefined,
+      }}
+    >
+      <Stack.Screen
+        name="index"
+        dangerouslySingular
+        options={{
+          title: "Chat",
+          animation: "none",
+          gestureEnabled: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="chats"
+        options={{
+          title: "Chats",
+          animation: "none",
+          headerLargeTitleShadowVisible: false,
+          gestureEnabled: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="attachments"
+        options={{
+          title: "Add to chat",
+          presentation: "formSheet",
+          sheetAllowedDetents: [0.55],
+          // following https://m3.material.io/components/bottom-sheets/specs
+          sheetCornerRadius: IS_ANDROID ? 28 : undefined,
+          sheetGrabberVisible: true,
+          headerTransparent: GLASS,
+          headerLargeTitleShadowVisible: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="model-picker"
+        options={{
+          title: "Model",
+          presentation: "formSheet",
+          sheetAllowedDetents: "fitToContents",
+          sheetCornerRadius: IS_ANDROID ? 28 : undefined,
+          sheetGrabberVisible: true,
+          headerTransparent: GLASS,
+          headerLargeTitleShadowVisible: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="(settings)"
+        options={{
+          presentation: IS_ANDROID ? undefined : "modal",
+          headerShown: false,
+        }}
+      />
+    </Stack>
   );
 }
